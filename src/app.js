@@ -1,3 +1,24 @@
+function validate(validatableInput) {
+    var isValid = true;
+    if (validatableInput.required) {
+        isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+    }
+    if (validatableInput.minLength != null) {
+        if (typeof (validatableInput.value) === 'string')
+            isValid = isValid && validatableInput.value.trim().length >= validatableInput.minLength;
+    }
+    if (validatableInput.maxLength != null) {
+        if (typeof (validatableInput.value) === 'string')
+            isValid = isValid && validatableInput.value.trim().length <= validatableInput.maxLength;
+    }
+    if (validatableInput.min != null && typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value > validatableInput.min;
+    }
+    if (validatableInput.max != null && typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value < validatableInput.max;
+    }
+    return isValid;
+}
 //autobind decorator
 function autobind(_, _2, descriptor) {
     var originalMethod = descriptor.value;
@@ -28,15 +49,22 @@ var ProjectInput = /** @class */ (function () {
         var enteredTitle = this.titleInputElement.value;
         var desc = this.descriptionInputELement.value;
         var people = this.peopleInputElement.value;
-        if (enteredTitle.trim().length === 0 ||
-            desc.trim().length === 0 ||
-            people.trim().length === 0) {
+        var titleValidatable = { value: enteredTitle, required: true };
+        var descValidatable = { value: desc, required: true, minLength: 5 };
+        var peopleValidatable = { value: +people, required: true, min: 1, max: 5 };
+        if (!validate(titleValidatable) || !validate(descValidatable) || !validate(peopleValidatable)) {
             alert("Invalid input, please try again!");
             return;
         }
         else {
             return [enteredTitle, desc, +people];
         }
+        this.clearInputs();
+    };
+    ProjectInput.prototype.clearInputs = function () {
+        this.titleInputElement.value = '';
+        this.descriptionInputELement.value = '';
+        this.peopleInputElement.value = '';
     };
     // @autobind
     ProjectInput.prototype.submitHandler = function (event) {
