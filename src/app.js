@@ -12,10 +12,10 @@ function validate(validatableInput) {
             isValid = isValid && validatableInput.value.trim().length <= validatableInput.maxLength;
     }
     if (validatableInput.min != null && typeof validatableInput.value === 'number') {
-        isValid = isValid && validatableInput.value > validatableInput.min;
+        isValid = isValid && validatableInput.value >= validatableInput.min;
     }
     if (validatableInput.max != null && typeof validatableInput.value === 'number') {
-        isValid = isValid && validatableInput.value < validatableInput.max;
+        isValid = isValid && validatableInput.value <= validatableInput.max;
     }
     return isValid;
 }
@@ -31,7 +31,29 @@ function autobind(_, _2, descriptor) {
     };
     return adjDescriptor;
 }
-//Project Input Class
+// ProjectList Class
+var ProjectList = /** @class */ (function () {
+    function ProjectList(type) {
+        this.type = type;
+        this.templateElement = document.getElementById("project-list");
+        this.hostElement = document.getElementById("app");
+        var importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild;
+        this.element.id = "".concat(this.type, "-projects");
+        this.attach();
+        this.renderContent();
+    }
+    ProjectList.prototype.renderContent = function () {
+        var listId = "".concat(this.type, "-projects-list");
+        this.element.querySelector('ul').id = listId;
+        this.element.querySelector('h2').textContent = this.type.toUpperCase() + ' PROJECTS';
+    };
+    ProjectList.prototype.attach = function () {
+        this.hostElement.insertAdjacentElement('beforeend', this.element);
+    };
+    return ProjectList;
+}());
+//ProjectInput Class
 var ProjectInput = /** @class */ (function () {
     function ProjectInput() {
         this.templateElement = document.getElementById("project-input");
@@ -84,3 +106,5 @@ var ProjectInput = /** @class */ (function () {
     return ProjectInput;
 }());
 var projInput = new ProjectInput();
+var activeProjectList = new ProjectList('active');
+var finishedProjectList = new ProjectList('finished');
