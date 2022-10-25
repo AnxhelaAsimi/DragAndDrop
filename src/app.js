@@ -1,3 +1,20 @@
+var ProjectStatus;
+(function (ProjectStatus) {
+    ProjectStatus[ProjectStatus["Active"] = 0] = "Active";
+    ProjectStatus[ProjectStatus["Finished"] = 1] = "Finished";
+})(ProjectStatus || (ProjectStatus = {}));
+// Project Type
+var Project = /** @class */ (function () {
+    function Project(id, title, description, people, status) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.people = people;
+        this.status = status;
+    }
+    ;
+    return Project;
+}());
 //Project State Management
 var ProjectState = /** @class */ (function () {
     function ProjectState() {
@@ -12,12 +29,7 @@ var ProjectState = /** @class */ (function () {
         return this.instance;
     };
     ProjectState.prototype.addProject = function (title, desc, nOfPeople) {
-        var newProject = {
-            id: Math.random.toString(),
-            title: title,
-            description: desc,
-            people: nOfPeople
-        };
+        var newProject = new Project(Math.random().toString(), title, desc, nOfPeople, ProjectStatus.Active);
         this.projects.push(newProject);
         for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
             var listenrfn = _a[_i];
@@ -37,17 +49,23 @@ function validate(validatableInput) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0;
     }
     if (validatableInput.minLength != null) {
-        if (typeof (validatableInput.value) === 'string')
-            isValid = isValid && validatableInput.value.trim().length >= validatableInput.minLength;
+        if (typeof validatableInput.value === "string")
+            isValid =
+                isValid &&
+                    validatableInput.value.trim().length >= validatableInput.minLength;
     }
     if (validatableInput.maxLength != null) {
-        if (typeof (validatableInput.value) === 'string')
-            isValid = isValid && validatableInput.value.trim().length <= validatableInput.maxLength;
+        if (typeof validatableInput.value === "string")
+            isValid =
+                isValid &&
+                    validatableInput.value.trim().length <= validatableInput.maxLength;
     }
-    if (validatableInput.min != null && typeof validatableInput.value === 'number') {
+    if (validatableInput.min != null &&
+        typeof validatableInput.value === "number") {
         isValid = isValid && validatableInput.value >= validatableInput.min;
     }
-    if (validatableInput.max != null && typeof validatableInput.value === 'number') {
+    if (validatableInput.max != null &&
+        typeof validatableInput.value === "number") {
         isValid = isValid && validatableInput.value <= validatableInput.max;
     }
     return isValid;
@@ -76,7 +94,11 @@ var ProjectList = /** @class */ (function () {
         this.element = importedNode.firstElementChild;
         this.element.id = "".concat(this.type, "-projects");
         projectState.addListener(function (projects) {
-            _this.assignedProjects = projects;
+            _this.assignedProjects = projects.filter(function (x) {
+                if (_this.type == 'active')
+                    return x.status === ProjectStatus.Active;
+                return x.status === ProjectStatus.Finished;
+            });
             _this.renderProjects();
         });
         this.attach();
@@ -84,20 +106,22 @@ var ProjectList = /** @class */ (function () {
     }
     ProjectList.prototype.renderProjects = function () {
         var listEl = document.getElementById("".concat(this.type, "-projects-list"));
+        listEl.innerHTML = '';
         for (var _i = 0, _a = this.assignedProjects; _i < _a.length; _i++) {
             var prjItem = _a[_i];
-            var listItem = document.createElement('li');
+            var listItem = document.createElement("li");
             listItem.textContent = prjItem.title;
             listEl.appendChild(listItem);
         }
     };
     ProjectList.prototype.renderContent = function () {
         var listId = "".concat(this.type, "-projects-list");
-        this.element.querySelector('ul').id = listId;
-        this.element.querySelector('h2').textContent = this.type.toUpperCase() + ' PROJECTS';
+        this.element.querySelector("ul").id = listId;
+        this.element.querySelector("h2").textContent =
+            this.type.toUpperCase() + " PROJECTS";
     };
     ProjectList.prototype.attach = function () {
-        this.hostElement.insertAdjacentElement('beforeend', this.element);
+        this.hostElement.insertAdjacentElement("beforeend", this.element);
     };
     return ProjectList;
 }());
@@ -119,10 +143,24 @@ var ProjectInput = /** @class */ (function () {
         var enteredTitle = this.titleInputElement.value;
         var desc = this.descriptionInputELement.value;
         var people = this.peopleInputElement.value;
-        var titleValidatable = { value: enteredTitle, required: true };
-        var descValidatable = { value: desc, required: true, minLength: 5 };
-        var peopleValidatable = { value: +people, required: true, min: 1, max: 5 };
-        if (!validate(titleValidatable) || !validate(descValidatable) || !validate(peopleValidatable)) {
+        var titleValidatable = {
+            value: enteredTitle,
+            required: true
+        };
+        var descValidatable = {
+            value: desc,
+            required: true,
+            minLength: 5
+        };
+        var peopleValidatable = {
+            value: +people,
+            required: true,
+            min: 1,
+            max: 5
+        };
+        if (!validate(titleValidatable) ||
+            !validate(descValidatable) ||
+            !validate(peopleValidatable)) {
             alert("Invalid input, please try again!");
             return;
         }
@@ -132,9 +170,9 @@ var ProjectInput = /** @class */ (function () {
         this.clearInputs();
     };
     ProjectInput.prototype.clearInputs = function () {
-        this.titleInputElement.value = '';
-        this.descriptionInputELement.value = '';
-        this.peopleInputElement.value = '';
+        this.titleInputElement.value = "";
+        this.descriptionInputELement.value = "";
+        this.peopleInputElement.value = "";
     };
     // @autobind
     ProjectInput.prototype.submitHandler = function (event) {
@@ -155,5 +193,5 @@ var ProjectInput = /** @class */ (function () {
     return ProjectInput;
 }());
 var projInput = new ProjectInput();
-var activeProjectList = new ProjectList('active');
-var finishedProjectList = new ProjectList('finished');
+var activeProjectList = new ProjectList("active");
+var finishedProjectList = new ProjectList("finished");
